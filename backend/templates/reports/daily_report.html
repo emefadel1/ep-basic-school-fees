@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.title }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm 2cm 2cm 2cm;
+
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+                color: #666;
+                font-family: Arial, sans-serif;
+            }
+
+            @bottom-left {
+                content: "Confidential";
+                font-size: 8pt;
+                color: #999;
+                font-style: italic;
+            }
+
+            @bottom-right {
+                content: "E.P Basic School Ashaiman";
+                font-size: 8pt;
+                color: #999;
+            }
+        }
+
+        @page :first {
+            margin-top: 1cm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #333;
+            background: #fff;
+            position: relative;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            opacity: 0.06;
+            pointer-events: none;
+        }
+
+        .watermark img {
+            width: 400px;
+            height: 400px;
+            object-fit: contain;
+        }
+
+        .letterhead {
+            width: 100%;
+            border-bottom: 3px solid #1a365d;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+
+        .letterhead-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .letterhead-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .school-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            padding: 5px;
+            background: #fff;
+        }
+
+        .school-info {
+            text-align: left;
+        }
+
+        .school-name {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .school-motto {
+            font-size: 9pt;
+            font-style: italic;
+            color: #4a5568;
+            margin: 2px 0;
+        }
+
+        .school-address {
+            font-size: 8pt;
+            color: #718096;
+            margin: 0;
+        }
+
+        .letterhead-right {
+            text-align: right;
+        }
+
+        .letterhead-right .contact-info {
+            font-size: 8pt;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .letterhead-right .contact-info strong {
+            color: #1a365d;
+        }
+
+        .letterhead-divider {
+            height: 4px;
+            background: linear-gradient(90deg, #1a365d 0%, #3182ce 50%, #63b3ed 100%);
+            margin-top: 10px;
+            border-radius: 2px;
+        }
+
+        .report-header {
+            text-align: center;
+            margin: 25px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .report-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .report-subtitle {
+            font-size: 11pt;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        .report-date {
+            font-size: 10pt;
+            color: #718096;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #cbd5e0;
+        }
+
+        .report-date strong {
+            color: #2d3748;
+        }
+
+        .section {
+            margin: 25px 0;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #1a365d;
+            background: linear-gradient(90deg, #edf2f7 0%, #fff 100%);
+            padding: 10px 15px;
+            border-left: 4px solid #3182ce;
+            border-radius: 0 5px 5px 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-cards {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-card {
+            flex: 1;
+            background: linear-gradient(135deg, #fff 0%, #f7fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .summary-card.primary {
+            background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+            border-color: #90cdf4;
+        }
+
+        .summary-card.success {
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            border-color: #9ae6b4;
+        }
+
+        .summary-card.warning {
+            background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+            border-color: #fbd38d;
+        }
+
+        .summary-card.danger {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border-color: #feb2b2;
+        }
+
+        .summary-card .value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin: 5px 0;
+        }
+
+        .summary-card .label {
+            font-size: 8pt;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 9pt;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+        }
+
+        th {
+            color: #fff;
+            font-weight: 600;
+            padding: 12px 10px;
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 8pt;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tfoot {
+            background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+            font-weight: bold;
+        }
+
+        tfoot td {
+            padding: 12px 10px;
+            border-top: 2px solid #cbd5e0;
+            color: #1a365d;
+        }
+
+        .amount {
+            text-align: right;
+            font-family: Consolas, Monaco, monospace;
+            font-weight: 500;
+        }
+
+        .amount-positive {
+            color: #276749;
+        }
+
+        .amount-negative {
+            color: #c53030;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 7pt;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-paid,
+        .status-present {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .status-partial,
+        .status-late {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .status-unpaid,
+        .status-absent {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            border-radius: 4px;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ed8936 0%, #dd6b20 100%);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #fc8181 0%, #f56565 100%);
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            padding-top: 30px;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 40px;
+            padding-top: 8px;
+        }
+
+        .signature-name {
+            font-weight: bold;
+            font-size: 10pt;
+        }
+
+        .signature-title {
+            font-size: 8pt;
+            color: #666;
+        }
+
+        .report-footer {
+            margin-top: 40px;
+            padding: 15px;
+            background: #f7fafc;
+            border-top: 2px solid #e2e8f0;
+            border-radius: 0 0 8px 8px;
+            page-break-inside: avoid;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left {
+            font-size: 8pt;
+            color: #718096;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .generated-info {
+            font-size: 8pt;
+            color: #4a5568;
+        }
+
+        .confidential-notice {
+            font-size: 7pt;
+            color: #a0aec0;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .currency::before {
+            content: "GH₵ ";
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="watermark">
+        <img src="{{ watermark_url }}" alt="Watermark">
+    </div>
+
+    <header class="letterhead">
+        <div class="letterhead-inner">
+            <div class="letterhead-left">
+                <img src="{{ school_logo_url }}" alt="School Logo" class="school-logo">
+                <div class="school-info">
+                    <h1 class="school-name">{{ school_name }}</h1>
+                    <p class="school-motto">{{ school_motto }}</p>
+                    <p class="school-address">{{ school_address }}</p>
+                </div>
+            </div>
+            <div class="letterhead-right">
+                <div class="contact-info">
+                    {% if school_phone %}<strong>Tel:</strong> {{ school_phone }}<br>{% endif %}
+                    {% if school_email %}<strong>Email:</strong> {{ school_email }}<br>{% endif %}
+                    {% if school_po_box %}<strong>P.O. Box:</strong> {{ school_po_box }}{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="letterhead-divider"></div>
+    </header>
+
+    <div class="report-header">
+        <h2 class="report-title">{{ report.title }}</h2>
+        <p class="report-subtitle">Studies Fee Collection & Distribution Report</p>
+        <p class="report-date">
+            <strong>Report Date:</strong> {{ report.date_range.start|date:"l, d F Y" }}
+            {% if report.date_range.start != report.date_range.end %}
+                to {{ report.date_range.end|date:"l, d F Y" }}
+            {% endif %}
+        </p>
+    </div>
+
+    <section class="section">
+        <div class="section-title">📊 Collection Summary</div>
+
+        <div class="summary-cards">
+            <div class="summary-card primary">
+                <div class="value"><span class="currency">{{ report.summary.total_expected|floatformat:2 }}</span></div>
+                <div class="label">Expected Amount</div>
+            </div>
+
+            <div class="summary-card success">
+                <div class="value"><span class="currency">{{ report.summary.total_collected|floatformat:2 }}</span></div>
+                <div class="label">Total Collected</div>
+            </div>
+
+            <div class="summary-card {% if report.summary.collection_rate >= 80 %}success{% elif report.summary.collection_rate >= 60 %}warning{% else %}danger{% endif %}">
+                <div class="value">{{ report.summary.collection_rate|floatformat:1 }}%</div>
+                <div class="label">Collection Rate</div>
+            </div>
+
+            <div class="summary-card {% if report.summary.total_outstanding == 0 %}success{% else %}danger{% endif %}">
+                <div class="value"><span class="currency">{{ report.summary.total_outstanding|floatformat:2 }}</span></div>
+                <div class="label">Outstanding</div>
+            </div>
+        </div>
+
+        <div class="summary-cards" style="margin-top: 10px;">
+            <div class="summary-card">
+                <div class="value" style="font-size: 14pt;">{{ report.summary.students_paid_full }}</div>
+                <div class="label">Fully Paid</div>
+            </div>
+            <div class="summary-card">
+                <div class="value" style="font-size: 14pt; color: #c05621;">{{ report.summary.students_paid_partial }}</div>
+                <div class="label">Partial Payment</div>
+            </div>
+            <div class="summary-card">
+                <div class="value" style="font-size: 14pt; color: #c53030;">{{ report.summary.students_unpaid }}</div>
+                <div class="label">Unpaid</div>
+            </div>
+            <div class="summary-card">
+                <div class="value" style="font-size: 14pt;">{{ report.summary.total_students }}</div>
+                <div class="label">Total Students</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-title">🏫 Collection by Category</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Category</th>
+                    <th style="width: 10%;">Classes</th>
+                    <th style="width: 12%;">Students</th>
+                    <th class="amount" style="width: 18%;">Expected</th>
+                    <th class="amount" style="width: 18%;">Collected</th>
+                    <th style="width: 17%;">Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in report.by_category %}
+                <tr>
+                    <td><strong>{{ category.name }}</strong></td>
+                    <td>{{ category.classes_count }}</td>
+                    <td>{{ category.students_count }}</td>
+                    <td class="amount">{{ category.expected|floatformat:2 }}</td>
+                    <td class="amount">{{ category.collected|floatformat:2 }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="progress-bar" style="flex: 1;">
+                                <div class="progress-fill {% if category.rate < 60 %}danger{% elif category.rate < 80 %}warning{% endif %}" style="width: {{ category.rate }}%;"></div>
+                            </div>
+                            <span style="font-size: 8pt; width: 35px;">{{ category.rate|floatformat:1 }}%</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>TOTAL</strong></td>
+                    <td>{{ report.totals.classes_count }}</td>
+                    <td>{{ report.totals.students_count }}</td>
+                    <td class="amount">{{ report.summary.total_expected|floatformat:2 }}</td>
+                    <td class="amount">{{ report.summary.total_collected|floatformat:2 }}</td>
+                    <td><strong>{{ report.summary.collection_rate|floatformat:1 }}%</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </section>
+
+    <section class="section">
+        <div class="section-title">💰 Collection by Fee Pool</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Pool</th>
+                    <th class="amount" style="width: 18%;">Collected</th>
+                    <th class="amount" style="width: 18%;">School (10%)</th>
+                    <th class="amount" style="width: 18%;">Staff Share</th>
+                    <th style="width: 12%;">Recipients</th>
+                    <th class="amount" style="width: 9%;">Per Staff</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pool in report.by_pool %}
+                <tr>
+                    <td><strong>{{ pool.pool_name }}</strong></td>
+                    <td class="amount">{{ pool.total_collected|floatformat:2 }}</td>
+                    <td class="amount">{{ pool.school_retention|floatformat:2 }}</td>
+                    <td class="amount amount-positive">{{ pool.distributed_to_staff|floatformat:2 }}</td>
+                    <td style="text-align: center;">{{ pool.recipient_count }}</td>
+                    <td class="amount">{{ pool.per_staff|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>TOTAL</strong></td>
+                    <td class="amount">{{ report.pool_totals.collected|floatformat:2 }}</td>
+                    <td class="amount">{{ report.pool_totals.school_retention|floatformat:2 }}</td>
+                    <td class="amount amount-positive">{{ report.pool_totals.staff_share|floatformat:2 }}</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        {% if show_admin_fee %}
+        <div style="background: #fff5f5; border: 1px solid #feb2b2; border-radius: 5px; padding: 10px; margin-top: 10px; font-size: 8pt;">
+            <strong style="color: #c53030;">⚠️ Administrative Fee (Bursar Only):</strong>
+            <span style="color: #742a2a;">GH₵ {{ report.pool_totals.admin_fee|floatformat:2 }}</span>
+        </div>
+        {% endif %}
+    </section>
+
+    <div class="page-break"></div>
+
+    <section class="section">
+        <div class="section-title">📚 Collection by Class</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 8%;">Class</th>
+                    <th style="width: 22%;">Teacher</th>
+                    <th style="width: 10%;">Students</th>
+                    <th class="amount" style="width: 15%;">Expected</th>
+                    <th class="amount" style="width: 15%;">Collected</th>
+                    <th style="width: 8%;">Unpaid</th>
+                    <th style="width: 22%;">Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cls in report.by_class %}
+                <tr>
+                    <td><strong>{{ cls.class_code }}</strong></td>
+                    <td>{{ cls.teacher_name }}</td>
+                    <td style="text-align: center;">{{ cls.student_count }}</td>
+                    <td class="amount">{{ cls.expected|floatformat:2 }}</td>
+                    <td class="amount">{{ cls.collected|floatformat:2 }}</td>
+                    <td style="text-align: center;">
+                        {% if cls.unpaid_count > 0 %}
+                        <span class="status-badge status-unpaid">{{ cls.unpaid_count }}</span>
+                        {% else %}
+                        <span class="status-badge status-paid">0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="progress-bar" style="flex: 1;">
+                                <div class="progress-fill {% if cls.rate < 60 %}danger{% elif cls.rate < 80 %}warning{% endif %}" style="width: {{ cls.rate }}%;"></div>
+                            </div>
+                            <span style="font-size: 8pt; width: 35px;">{{ cls.rate|floatformat:1 }}%</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="section">
+        <div class="section-title">👥 Staff Distribution Summary</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Staff Name</th>
+                    <th style="width: 15%;">Role</th>
+                    <th style="width: 12%;">Attendance</th>
+                    <th class="amount" style="width: 15%;">General Studies</th>
+                    <th class="amount" style="width: 12%;">JHS Extra</th>
+                    <th class="amount" style="width: 10%;">Other</th>
+                    <th class="amount" style="width: 11%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff in report.staff_distribution %}
+                <tr>
+                    <td><strong>{{ staff.staff_name }}</strong></td>
+                    <td>{{ staff.role }}</td>
+                    <td>
+                        <span class="status-badge status-{{ staff.attendance|lower }}">
+                            {{ staff.attendance }}
+                        </span>
+                    </td>
+                    <td class="amount">{{ staff.pools.GEN_STUDIES|default:"0.00"|floatformat:2 }}</td>
+                    <td class="amount">{{ staff.pools.JHS_EXTRA|default:"0.00"|floatformat:2 }}</td>
+                    <td class="amount">{{ staff.other_pools|default:"0.00"|floatformat:2 }}</td>
+                    <td class="amount amount-positive"><strong>{{ staff.total|floatformat:2 }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>TOTAL DISTRIBUTION</strong></td>
+                    <td class="amount">{{ report.distribution_totals.general_studies|floatformat:2 }}</td>
+                    <td class="amount">{{ report.distribution_totals.jhs_extra|floatformat:2 }}</td>
+                    <td class="amount">{{ report.distribution_totals.other|floatformat:2 }}</td>
+                    <td class="amount amount-positive"><strong>{{ report.distribution_totals.total|floatformat:2 }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </section>
+
+    {% if report.unpaid_students %}
+    <section class="section">
+        <div class="section-title" style="border-left-color: #c53030;">⚠️ Unpaid Students</div>
+
+        <table>
+            <thead>
+                <tr style="background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);">
+                    <th style="width: 8%;">Class</th>
+                    <th style="width: 30%;">Student Name</th>
+                    <th class="amount" style="width: 15%;">Amount Owed</th>
+                    <th style="width: 15%;">Reason</th>
+                    <th style="width: 32%;">Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in report.unpaid_students %}
+                <tr>
+                    <td>{{ student.class_code }}</td>
+                    <td>{{ student.student_name }}</td>
+                    <td class="amount amount-negative">{{ student.amount_owed|floatformat:2 }}</td>
+                    <td>
+                        <span class="status-badge status-unpaid">{{ student.reason }}</span>
+                    </td>
+                    <td style="font-size: 8pt;">{{ student.notes|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"><strong>Total Unpaid Students: {{ report.unpaid_students|length }}</strong></td>
+                    <td class="amount amount-negative"><strong>{{ report.total_unpaid_amount|floatformat:2 }}</strong></td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </section>
+    {% endif %}
+
+    <section class="signatures">
+        <div class="signature-box">
+            <div class="signature-line">
+                <p class="signature-name">_______________________</p>
+                <p class="signature-title">Headteacher</p>
+            </div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line">
+                <p class="signature-name">_______________________</p>
+                <p class="signature-title">Bursar</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="report-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <img src="{{ school_logo_url }}" alt="Logo" style="width: 30px; height: 30px; vertical-align: middle; margin-right: 8px;">
+                <span>{{ school_name }}</span>
+            </div>
+            <div class="footer-right">
+                <p class="generated-info">
+                    <strong>Generated by:</strong> {{ report.generated_by }}<br>
+                    <strong>Date & Time:</strong> {{ report.generated_at|date:"d M Y, H:i:s" }}
+                </p>
+                <p class="confidential-notice">
+                    This document is confidential and intended for authorized school personnel only.
+                    Unauthorized distribution is prohibited.
+                </p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,43 @@
+Attendance_Statuses:
+  PRESENT:
+    code: "PRESENT"
+    description: "Staff is present and teaching"
+    share_percentage: 100%
+    requires_documentation: false
+
+  LATE:
+    code: "LATE"
+    description: "Staff arrived late"
+    share_percentage: 50%
+    requires_documentation: false
+    late_threshold_minutes: 30
+
+  SICK:
+    code: "SICK"
+    description: "Staff is sick"
+    share_percentage: 50%
+    requires_documentation: true
+    documentation_type: "sick_note"
+    grace_period_days: 3
+
+  PERMISSION:
+    code: "PERMISSION"
+    description: "Staff has approved permission"
+    share_percentage: 50%
+    requires_documentation: true
+    documentation_type: "permission_form"
+    requires_approval: true
+
+  OFFICIAL_DUTY:
+    code: "OFFICIAL_DUTY"
+    description: "Staff on official school duty"
+    share_percentage: 100%
+    requires_documentation: true
+    documentation_type: "duty_letter"
+
+  ABSENT:
+    code: "ABSENT"
+    description: "Unexcused absence"
+    share_percentage: 0%
+    requires_documentation: false
+    forfeited_share_action: "redistribute"

@@ -1,0 +1,101 @@
+Pool_1_General_Studies:
+  name: "General Studies"
+  code: "GEN_STUDIES"
+  description: "Daily studies fee from all classes"
+  source_classes: ALL
+  fee_field: "daily_fee"
+
+  deductions:
+    school_retention:
+      percentage: 10%
+      description: "School operational fund"
+    administrative_fee:
+      percentage: 0%
+      recipient: null
+
+  distribution:
+    method: "attendance_weighted"
+    eligible_staff: "all_teaching_staff"
+    include_headteacher: true
+    attendance_rules: true
+
+  special_rules: []
+
+Pool_2_JHS_Extra:
+  name: "JHS Extra Classes"
+  code: "JHS_EXTRA"
+  description: "Extra class fees from JHS 1, 2, and 3"
+  source_classes: [B7, B8, B9]
+  fee_field: "jhs_extra_fee"
+
+  deductions:
+    school_retention:
+      percentage: 10%
+      description: "School operational fund"
+    administrative_fee:
+      percentage: 3%
+      recipient: "bursar"
+      description: "Administrative processing fee"
+      visible_in_reports: "admin_only"
+
+  distribution:
+    method: "fixed_split"
+    splits:
+      - name: "Class Teacher Bonus"
+        percentage: 10%
+        recipients: "jhs_class_teachers"
+        split_method: "equal"
+      - name: "JHS Staff Share"
+        percentage: 77%
+        recipients: "all_jhs_staff"
+        include_headteacher: true
+        split_method: "equal"
+    attendance_rules: false
+
+  special_rules:
+    - "Class teachers receive both CT bonus and staff share"
+
+Pool_3_JHS3_Extra:
+  name: "JHS 3 Extra"
+  code: "JHS3_EXTRA"
+  description: "Additional preparation fee for JHS 3 only"
+  source_classes: [B9]
+  fee_field: "jhs3_extra_fee"
+
+  deductions:
+    school_retention:
+      percentage: 10%
+    administrative_fee:
+      percentage: 3%
+      recipient: "bursar"
+      visible_in_reports: "admin_only"
+
+  distribution:
+    method: "equal"
+    eligible_staff: "all_jhs_staff"
+    include_headteacher: true
+    attendance_rules: false
+
+Pool_4_Saturday:
+  name: "Saturday Classes"
+  code: "SATURDAY"
+  description: "Saturday extra class fees"
+  source_classes: [B7, B8, B9]
+  fee_field: "saturday_fee"
+
+  deductions:
+    school_retention:
+      percentage: 10%
+    administrative_fee:
+      percentage: 3%
+      recipient: "bursar"
+      visible_in_reports: "admin_only"
+
+  distribution:
+    method: "equal"
+    eligible_staff: "saturday_attendees"
+    include_headteacher: true
+    attendance_rules: false
+
+  special_rules:
+    - "Only staff marked present on Saturday receive share"

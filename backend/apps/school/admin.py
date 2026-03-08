@@ -1,6 +1,7 @@
 # apps/school/admin.py
 
 from django.contrib import admin
+
 from .models import SchoolClass, Student, SchoolSettings
 
 
@@ -10,7 +11,7 @@ class SchoolClassAdmin(admin.ModelAdmin):
     list_filter = ['category', 'is_active']
     search_fields = ['code', 'name']
     ordering = ['sort_order']
-    
+
     fieldsets = (
         ('Basic Info', {
             'fields': ('code', 'name', 'category', 'sort_order', 'is_active')
@@ -27,7 +28,7 @@ class StudentAdmin(admin.ModelAdmin):
     list_filter = ['school_class', 'status', 'gender', 'has_fee_exemption']
     search_fields = ['student_id', 'first_name', 'last_name', 'parent_phone']
     ordering = ['school_class', 'last_name', 'first_name']
-    
+
     fieldsets = (
         ('Identification', {
             'fields': ('student_id',)
@@ -42,8 +43,13 @@ class StudentAdmin(admin.ModelAdmin):
             'fields': ('parent_name', 'parent_phone', 'parent_phone_alt', 'parent_email', 'address')
         }),
         ('Fee Exemption', {
-            'fields': ('has_fee_exemption', 'exemption_percentage', 'exemption_reason', 
-                      'exemption_approved_by', 'exemption_valid_until'),
+            'fields': (
+                'has_fee_exemption',
+                'exemption_percentage',
+                'exemption_reason',
+                'exemption_approved_by',
+                'exemption_valid_until',
+            ),
             'classes': ['collapse']
         }),
     )
@@ -59,15 +65,23 @@ class SchoolSettingsAdmin(admin.ModelAdmin):
             'fields': ('school_phone', 'school_email', 'school_po_box')
         }),
         ('Branding', {
-            'fields': ('logo', 'report_header_color', 'watermark_opacity')
+            'fields': (
+                'logo',
+                'logo_watermark',
+                'report_header_color',
+                'report_accent_color',
+                'watermark_opacity',
+            )
         }),
         ('Fee Settings', {
             'fields': ('school_retention_percentage', 'admin_fee_percentage')
         }),
     )
-    
+
+    readonly_fields = ('logo_watermark',)
+
     def has_add_permission(self, request):
         return not SchoolSettings.objects.exists()
-    
+
     def has_delete_permission(self, request, obj=None):
         return False

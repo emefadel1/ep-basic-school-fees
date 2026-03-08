@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.title }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm 2cm 2cm 2cm;
+
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+                color: #666;
+                font-family: Arial, sans-serif;
+            }
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 10pt;
+            color: #333;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            opacity: 0.06;
+        }
+
+        .watermark img {
+            width: 380px;
+            height: 380px;
+            object-fit: contain;
+        }
+
+        .letterhead {
+            width: 100%;
+            border-bottom: 3px solid #1a365d;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .letterhead-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .letterhead-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .school-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            padding: 5px;
+            background: #fff;
+        }
+
+        .school-name {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin: 0;
+        }
+
+        .school-motto {
+            font-size: 9pt;
+            font-style: italic;
+            color: #4a5568;
+            margin: 2px 0;
+        }
+
+        .school-address {
+            font-size: 8pt;
+            color: #718096;
+            margin: 0;
+        }
+
+        .report-header {
+            text-align: center;
+            margin: 25px 0;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .report-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #1a365d;
+            background: #edf2f7;
+            padding: 10px 15px;
+            border-left: 4px solid #3182ce;
+            margin: 20px 0 10px 0;
+        }
+
+        .summary-cards {
+            display: flex;
+            gap: 12px;
+            margin: 15px 0 20px 0;
+        }
+
+        .summary-card {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            background: #fff;
+        }
+
+        .summary-card .value {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1a365d;
+        }
+
+        .summary-card .label {
+            font-size: 8pt;
+            color: #718096;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 9pt;
+        }
+
+        thead {
+            background: #1a365d;
+        }
+
+        th {
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 8pt;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .amount {
+            text-align: right;
+            font-family: Consolas, Monaco, monospace;
+        }
+
+        .paid {
+            color: #276749;
+            font-weight: bold;
+        }
+
+        .pending {
+            color: #c05621;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 8pt;
+            color: #718096;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .currency::before {
+            content: "GH₵ ";
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="watermark">
+        <img src="{{ watermark_url }}" alt="Watermark">
+    </div>
+
+    <header class="letterhead">
+        <div class="letterhead-inner">
+            <div class="letterhead-left">
+                <img src="{{ school_logo_url }}" alt="School Logo" class="school-logo">
+                <div>
+                    <h1 class="school-name">{{ school_name }}</h1>
+                    <p class="school-motto">{{ school_motto }}</p>
+                    <p class="school-address">{{ school_address }}</p>
+                </div>
+            </div>
+            <div>
+                {% if school_phone %}<div><strong>Tel:</strong> {{ school_phone }}</div>{% endif %}
+                {% if school_email %}<div><strong>Email:</strong> {{ school_email }}</div>{% endif %}
+                {% if school_po_box %}<div><strong>P.O. Box:</strong> {{ school_po_box }}</div>{% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="report-header">
+        <div class="report-title">{{ report.title }}</div>
+        <div><strong>Staff:</strong> {{ report.staff_name }} ({{ report.staff_role }})</div>
+        <div>
+            <strong>Period:</strong>
+            {{ report.date_range.start|date:"d M Y" }} to {{ report.date_range.end|date:"d M Y" }}
+        </div>
+    </div>
+
+    <div class="section-title">Summary</div>
+    <div class="summary-cards">
+        <div class="summary-card">
+            <div class="value"><span class="currency">{{ report.summary.total_earned|floatformat:2 }}</span></div>
+            <div class="label">Total Earned</div>
+        </div>
+        <div class="summary-card">
+            <div class="value paid"><span class="currency">{{ report.summary.total_paid|floatformat:2 }}</span></div>
+            <div class="label">Total Paid</div>
+        </div>
+        <div class="summary-card">
+            <div class="value pending"><span class="currency">{{ report.summary.total_pending|floatformat:2 }}</span></div>
+            <div class="label">Pending</div>
+        </div>
+        <div class="summary-card">
+            <div class="value">{{ report.summary.distribution_count }}</div>
+            <div class="label">Entries</div>
+        </div>
+    </div>
+
+    <div class="section-title">Distribution Details</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Pool</th>
+                <th>Attendance</th>
+                <th class="amount">Base</th>
+                <th class="amount">Adjusted</th>
+                <th class="amount">Special</th>
+                <th class="amount">Total</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in report.distributions %}
+            <tr>
+                <td>{{ item.session_date|date:"d M Y" }}</td>
+                <td>{{ item.pool_type }}</td>
+                <td>{{ item.attendance_status }}</td>
+                <td class="amount">{{ item.base_share|floatformat:2 }}</td>
+                <td class="amount">{{ item.adjusted_share|floatformat:2 }}</td>
+                <td class="amount">{{ item.special_share_amount|floatformat:2 }}</td>
+                <td class="amount">{{ item.total_share|floatformat:2 }}</td>
+                <td>{% if item.is_paid %}Paid{% else %}Pending{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <div>{{ school_name }}</div>
+        <div>
+            Generated by {{ report.generated_by }} on {{ report.generated_at|date:"d M Y, H:i:s" }}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,5 +1,5 @@
-﻿from django.urls import path
+# apps/reports/urls.py
 
-urlpatterns = [
-    
-]
+from django.urls import path
+
+urlpatterns = []

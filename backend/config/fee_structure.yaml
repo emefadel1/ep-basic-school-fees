@@ -1,0 +1,28 @@
+Pre-School:
+  classes:
+    - code: N1
+      name: Nursery 1
+      daily_fee: 3.00
+    - code: N2
+      name: Nursery 2
+      daily_fee: 3.00
+    - code: KG1
+      name: Kindergarten 1
+      daily_fee: 3.00
+    - code: KG2
+      name: Kindergarten 2
+      daily_fee: 3.00
+  category_code: PRE_SCHOOL
+
+Lower_Primary:
+  classes:
+    - code: B1
+      name: Basic 1
+      daily_fee: 4.00
+    - code: B2
+      name: Basic 2
+      daily_fee: 4.00
+    - code: B3
+      name: Basic 3
+      daily_fee: 4.00
+  category_code: PRIMARY
