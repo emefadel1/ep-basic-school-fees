@@ -16,23 +16,15 @@ cd "$APP_DIR"
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
-if [ "${LOAD_FIXTURES:-false}" = 'true' ]; then
+if [ "${LOAD_FIXTURES:-false}" = "true" ]; then
   if [ -n "${FIXTURE_PATH:-}" ] && [ -f "${FIXTURE_PATH}" ]; then
     python manage.py loaddata "${FIXTURE_PATH}"
   fi
 fi
 
-if [ "${CREATE_SUPERUSER:-false}" = 'true' ]; then
-  if [ -z "${DJANGO_SUPERUSER_USERNAME:-}" ]; then
-    echo 'CREATE_SUPERUSER=true but DJANGO_SUPERUSER_USERNAME is missing'
-    exit 1
-  fi
-  if [ -z "${DJANGO_SUPERUSER_EMAIL:-}" ]; then
-    echo 'CREATE_SUPERUSER=true but DJANGO_SUPERUSER_EMAIL is missing'
-    exit 1
-  fi
-  if [ -z "${DJANGO_SUPERUSER_PASSWORD:-}" ]; then
-    echo 'CREATE_SUPERUSER=true but DJANGO_SUPERUSER_PASSWORD is missing'
+if [ "${CREATE_SUPERUSER:-false}" = "true" ]; then
+  if [ -z "${DJANGO_SUPERUSER_USERNAME:-}" ] || [ -z "${DJANGO_SUPERUSER_EMAIL:-}" ] || [ -z "${DJANGO_SUPERUSER_PASSWORD:-}" ]; then
+    echo "CREATE_SUPERUSER=true but required DJANGO_SUPERUSER_* vars are missing"
     exit 1
   fi
   python manage.py shell -c "from django.contrib.auth import get_user_model; import os; User = get_user_model(); username = os.environ.get('DJANGO_SUPERUSER_USERNAME'); email = os.environ.get('DJANGO_SUPERUSER_EMAIL'); password = os.environ.get('DJANGO_SUPERUSER_PASSWORD'); existing = User.objects.filter(username=username).first(); existing or User.objects.create_superuser(username, email, password)"
@@ -41,3 +33,6 @@ fi
 if [ "$#" -gt 0 ]; then
   exec "$@"
 fi
+
+# Default runtime when no args are passed
+exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120
