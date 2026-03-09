@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>E.P Basic School Fees</title>
+  <rect width="256" height="256" rx="56" fill="#0f172a" />
+  <rect x="28" y="28" width="200" height="200" rx="40" fill="#1d4ed8" />
+  <path d="M72 82h112v20H72zm0 36h112v20H72zm0 36h70v20H72z" fill="#e2e8f0" />
+  <circle cx="180" cy="168" r="28" fill="#f59e0b" />
+  <path d="M168 168h24" stroke="#0f172a" stroke-width="8" stroke-linecap="round" />
+  <path d="M180 156v24" stroke="#0f172a" stroke-width="8" stroke-linecap="round" />
+</svg>

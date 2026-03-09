@@ -7,11 +7,11 @@ from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional
 
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Sum
 
 from apps.audit.models import AuditLog
+from core.exceptions import DistributionError, InsufficientDataError
 from ..models import Distribution, FeeCollection, PoolSummary, Session
 from .attendance_service import AttendanceService
 from .pool_config import get_pool_by_code
@@ -154,7 +154,11 @@ class FeeDistributionEngine:
             if split.get("name") == split_name:
                 return self._rate(split.get("rate", split.get("percentage", "0%")))
 
-        raise ValidationError(f"Split '{split_name}' not found for pool '{pool_code}'")
+        raise DistributionError(
+            message=f"Split '{split_name}' was not found for pool '{pool_code}'.",
+            code="distribution_split_not_found",
+            extra={"pool_code": pool_code, "split_name": split_name},
+        )
 
     def unique_ids(self, staff_ids: List[int]) -> List[int]:
         return list(dict.fromkeys(staff_ids))
@@ -245,8 +249,9 @@ class FeeDistributionEngine:
 
         if pool_code == "JHS_EXTRA":
             if jhs_class_teachers is None or all_jhs_staff is None:
-                raise ValidationError(
-                    "jhs_class_teachers and all_jhs_staff are required for JHS_EXTRA distribution."
+                raise InsufficientDataError(
+                    message="JHS_EXTRA distribution requires class teacher and staff data.",
+                    extra={"required": ["jhs_class_teachers", "all_jhs_staff"]},
                 )
             return self.distribute_jhs_extra(
                 total_collected=total_collected,
@@ -257,7 +262,10 @@ class FeeDistributionEngine:
 
         if pool_code == "JHS3_EXTRA":
             if all_jhs_staff is None:
-                raise ValidationError("all_jhs_staff is required for JHS3_EXTRA distribution.")
+                raise InsufficientDataError(
+                    message="JHS3_EXTRA distribution requires the full JHS staff list.",
+                    extra={"required": ["all_jhs_staff"]},
+                )
             return self.distribute_jhs3_extra(
                 total_collected=total_collected,
                 all_jhs_staff=all_jhs_staff,
@@ -276,8 +284,11 @@ class FeeDistributionEngine:
                 headteacher_id=headteacher_id,
             )
 
-        raise ValidationError(f"Unsupported pool code '{pool_code}'")
-
+        raise DistributionError(
+            message=f"Pool '{pool_code}' is not supported for distribution.",
+            code="unsupported_pool_code",
+            extra={"pool_code": pool_code},
+        )
     @transaction.atomic
     def calculate_and_save(
         self,
@@ -294,6 +305,12 @@ class FeeDistributionEngine:
         ip_address: Optional[str] = None,
         user_agent: str = "",
     ) -> DistributionResult:
+        if self.session.status != Session.Status.APPROVED:
+            raise DistributionError(
+                message="Session must be approved before distribution can run.",
+                code="distribution_invalid_state",
+                extra={"session_id": self.session.id, "status": self.session.status},
+            )
         result = self.calculate(
             pool_code=pool_code,
             headteacher_id=headteacher_id,
@@ -326,7 +343,11 @@ class FeeDistributionEngine:
         validation = validator.validate(result, expected_total=result.total_collected)
 
         if not validation.is_valid:
-            raise ValidationError(validation.errors)
+            raise DistributionError(
+                message="Distribution result did not pass validation.",
+                code="distribution_validation_failed",
+                extra={"errors": validation.errors, "warnings": validation.warnings},
+            )
 
         existing_summary = PoolSummary.objects.filter(
             session=self.session,

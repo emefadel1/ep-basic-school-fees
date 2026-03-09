@@ -1,0 +1,42 @@
+{
+  "name": "E.P Basic School Fee Distribution",
+  "short_name": "EP Fees",
+  "description": "School fee collection, approvals, distributions, and reports for E.P Basic School.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Sessions",
+      "short_name": "Sessions",
+      "url": "/sessions"
+    },
+    {
+      "name": "Reports",
+      "short_name": "Reports",
+      "url": "/reports"
+    }
+  ]
+}

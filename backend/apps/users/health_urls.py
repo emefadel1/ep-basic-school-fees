@@ -1,12 +1,8 @@
-﻿from django.urls import path
-from django.http import JsonResponse
+from django.urls import path
 
-def health_check(request):
-    return JsonResponse({
-        "status": "ok",
-        "service": "EP Basic School Fee System"
-    })
+from apps.users.health_views import HealthCheckView, MetricsView
 
 urlpatterns = [
-    path('', health_check),
+    path('health/', HealthCheckView.as_view(), name='health-check'),
+    path('metrics/', MetricsView.as_view(), name='metrics'),
 ]

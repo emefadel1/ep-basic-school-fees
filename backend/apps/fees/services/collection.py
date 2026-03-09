@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 from django.db.models import Count, Q, Sum
 
 from ..models import FeeCollection
-from school.models import SchoolClass
+from apps.school.models import SchoolClass
 
 
 @dataclass

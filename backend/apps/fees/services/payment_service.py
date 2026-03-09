@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.audit.models import AuditLog
+from apps.notifications.services import notify_fee_waiver_approved
 from ..models import FeeCollection, Session, StudentArrears
 
 
@@ -215,6 +216,8 @@ class PaymentService:
         collection.unpaid_notes = ""
         collection.recorded_by = approved_by
         collection.save()
+
+        notify_fee_waiver_approved(collection)
 
         self._audit(
             action=AuditLog.Action.FEE_WAIVER,

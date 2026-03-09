@@ -133,6 +133,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "EXCEPTION_HANDLER": "core.exception_handler.custom_exception_handler",
     "URL_FORMAT_OVERRIDE": None,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -161,10 +162,11 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "EP Basic School Fees API",
-    "DESCRIPTION": "School fee collection and distribution API",
+    "TITLE": "E.P Basic School Fees API",
+    "DESCRIPTION": "Fee collection, distribution, reporting, and dashboard API",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "SORT_OPERATIONS": True,
 }
 
 # Static files (CSS, JavaScript, Images)
@@ -177,3 +179,17 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.User"
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@epbasic.local'
+
+Q_CLUSTER = {
+    'name': 'ep-basic-notifications',
+    'workers': 1,
+    'timeout': 60,
+    'retry': 90,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',
+}
+
+READ_NOTIFICATION_RETENTION_DAYS = 90

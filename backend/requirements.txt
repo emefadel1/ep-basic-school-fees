@@ -38,3 +38,6 @@ requests==2.31.0
 
 # Push Notifications
 pywebpush==1.14.0
+# Production
+gunicorn==22.0.0
+whitenoise==6.8.2

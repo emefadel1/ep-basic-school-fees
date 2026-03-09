@@ -11,6 +11,7 @@ import environ
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+PROJECT_ROOT = BASE_DIR.parent
 
 # Initialize environ
 env = environ.Env(
@@ -18,8 +19,10 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, ['localhost', '127.0.0.1']),
 )
 
-# Read .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# Read .env files (support local backend/.env and repository-root .env)
+for env_path in (BASE_DIR / '.env', PROJECT_ROOT / '.env'):
+    if env_path.exists():
+        environ.Env.read_env(env_path)
 
 # Security
 SECRET_KEY = env('SECRET_KEY')
@@ -92,6 +95,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': env.db('DATABASE_URL', default='sqlite:///db.sqlite3')
 }
+DATABASES['default']['CONN_MAX_AGE'] = env.int('DATABASE_CONN_MAX_AGE', default=60)
+DATABASES['default']['CONN_HEALTH_CHECKS'] = True
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
@@ -122,7 +127,7 @@ USE_TZ = True
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 
 # Media files
 MEDIA_URL = '/media/'
@@ -130,6 +135,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Proxy / deployment security
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = env.bool('USE_X_FORWARDED_HOST', default=True)
+SECURE_REFERRER_POLICY = env('SECURE_REFERRER_POLICY', default='same-origin')
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -150,7 +161,7 @@ REST_FRAMEWORK = {
         'anon': '20/minute',
         'user': '100/minute',
     },
-    'EXCEPTION_HANDLER': 'utils.exceptions.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'core.exception_handler.custom_exception_handler',
 }
 
 # JWT Settings
@@ -169,10 +180,13 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
+CORS_ALLOWED_ORIGINS = env.list(
+    'CORS_ALLOWED_ORIGINS',
+    default=[
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+    ],
+)
 CORS_ALLOW_CREDENTIALS = True
 
 # Cache
@@ -210,6 +224,15 @@ SPECTACULAR_SETTINGS = {
 
 # Email
 EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@epbasic.local')
+EMAIL_HOST = env('EMAIL_HOST', default='localhost')
+EMAIL_PORT = env.int('EMAIL_PORT', default=25)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=False)
+EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
+FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
+READ_NOTIFICATION_RETENTION_DAYS = env.int('READ_NOTIFICATION_RETENTION_DAYS', default=90)
 
 # Logging
 LOGGING = {

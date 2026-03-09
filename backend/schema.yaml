@@ -1,0 +1,7 @@
+openapi: 3.0.3
+info:
+  title: E.P Basic School Fee Management API
+  version: 1.0.0
+  description: API for managing school fees and staff distribution
+paths: {}
+components: {}

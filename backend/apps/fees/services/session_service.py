@@ -247,7 +247,7 @@ class SessionService:
         if not validation["is_valid"]:
             raise ValidationError(validation["errors"])
 
-        session.submit_for_approval()
+        session.submit_for_approval(user=user)
         self.session = session
 
         self._audit(
@@ -361,7 +361,7 @@ class SessionService:
         if not validation["is_valid"]:
             raise ValidationError(validation["errors"])
 
-        session.mark_distributed()
+        session.mark_distributed(user=user)
         self.session = session
 
         self._audit(

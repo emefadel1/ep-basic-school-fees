@@ -27,7 +27,7 @@ def home_view(request):
         'version': '1.0.0',
         'endpoints': {
             'admin': '/admin/',
-            'api': '/api/',
+            'api': '/api/v1/',
             'health': '/health/',
         }
     })

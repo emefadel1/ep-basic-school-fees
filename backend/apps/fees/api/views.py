@@ -5,6 +5,7 @@ from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -15,6 +16,7 @@ from apps.fees.services.collection import CollectionService
 from apps.fees.services.distribution import FeeDistributionEngine
 from apps.fees.services.payment_service import PaymentService
 from apps.fees.services.session_service import SessionService
+from core.exceptions import InsufficientDataError, PermissionDeniedError, SessionNotOpenError
 
 from .permissions import (
     IsBursar,
@@ -193,6 +195,11 @@ class SessionViewSet(viewsets.ModelViewSet):
             .distinct()
         )
 
+        if not pool_codes:
+            raise InsufficientDataError(
+                message="No fee collections were found for distribution.",
+                extra={"session_id": session.id},
+            )
         results = []
         for pool_code in pool_codes:
             result = engine.calculate_and_save(
@@ -381,16 +388,21 @@ class CollectionViewSet(
         serializer.is_valid(raise_exception=True)
 
         if collection.session.status != Session.Status.OPEN:
-            return Response(
-                {"detail": "Session must be OPEN to update collections."},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise SessionNotOpenError(
+                message="Session must be open to update collections.",
+                extra={"session_id": collection.session_id, "status": collection.session.status},
             )
+
 
         role = str(getattr(request.user, "role", "")).upper()
         assigned_class_id = getattr(request.user, "assigned_class_id", None)
         if role == "TEACHER":
             if assigned_class_id and collection.school_class_id != assigned_class_id:
-                return Response({"detail": "Teacher can only update own class."}, status=status.HTTP_403_FORBIDDEN)
+                raise PermissionDeniedError(
+                    message="Teacher can only update their assigned class.",
+                    code="class_access_denied",
+                    extra={"assigned_class_id": assigned_class_id, "collection_class_id": collection.school_class_id},
+                )
             if collection.session.date != request._request.GET.get("today", collection.session.date.isoformat()):
                 pass
 
@@ -422,7 +434,7 @@ class CollectionViewSet(
         class_id = request.query_params.get("class_id")
 
         if not session_id:
-            return Response({"detail": "session_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            raise DRFValidationError({"session_id": ["This query parameter is required."]})
 
         service = CollectionService()
 

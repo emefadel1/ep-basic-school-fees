@@ -1,17 +1,27 @@
-# config/settings/__init__.py
-
 """
 Settings package for E.P Basic School Fee Management System.
 Automatically loads appropriate settings based on environment.
 """
 
-import os
+from pathlib import Path
+import environ
 
-environment = os.getenv('DJANGO_ENV', 'development')
+BASE_DIR = Path(__file__).resolve().parents[2]
 
-if environment == 'production':
+env = environ.Env()
+
+# Prefer backend/.env for local Django commands, then root .env for Docker/root usage
+backend_env = BASE_DIR / ".env"
+root_env = BASE_DIR.parent / ".env"
+
+if backend_env.exists():
+    environ.Env.read_env(backend_env)
+elif root_env.exists():
+    environ.Env.read_env(root_env)
+
+environment = env("DJANGO_ENV", default="development").lower()
+
+if environment == "production":
     from .production import *
-elif environment == 'development':
-    from .development import *
 else:
     from .development import *

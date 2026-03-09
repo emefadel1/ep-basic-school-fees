@@ -172,6 +172,13 @@ class Session(models.Model):
     )
 
     submitted_at = models.DateTimeField(null=True, blank=True)
+    submitted_by = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='submitted_sessions',
+    )
 
     approved_at = models.DateTimeField(null=True, blank=True)
     approved_by = models.ForeignKey(
@@ -252,14 +259,19 @@ class Session(models.Model):
         self.full_clean()
         self.save()
 
-    def submit_for_approval(self):
+    def submit_for_approval(self, user=None):
         if self.status != self.Status.OPEN:
             raise ValidationError('Can only submit OPEN sessions')
 
         self.status = self.Status.PENDING_APPROVAL
         self.submitted_at = timezone.now()
+        self.submitted_by = user
         self.full_clean()
         self.save()
+
+        from apps.notifications.services import notify_session_submitted
+
+        notify_session_submitted(self)
 
     def approve(self, user, notes=''):
         if self.status != self.Status.PENDING_APPROVAL:
@@ -271,6 +283,10 @@ class Session(models.Model):
         self.approval_notes = notes
         self.full_clean()
         self.save()
+
+        from apps.notifications.services import notify_session_approved
+
+        notify_session_approved(self)
 
     def reject(self, user, reason):
         if self.status != self.Status.PENDING_APPROVAL:
@@ -286,6 +302,10 @@ class Session(models.Model):
         self.full_clean()
         self.save()
 
+        from apps.notifications.services import notify_session_rejected
+
+        notify_session_rejected(self)
+
     def reopen(self, user):
         if self.status != self.Status.REJECTED:
             raise ValidationError('Can only reopen REJECTED sessions')
@@ -297,7 +317,7 @@ class Session(models.Model):
         self.full_clean()
         self.save()
 
-    def mark_distributed(self):
+    def mark_distributed(self, user=None):
         if self.status != self.Status.APPROVED:
             raise ValidationError('Can only distribute APPROVED sessions')
 
@@ -305,6 +325,10 @@ class Session(models.Model):
         self.distributed_at = timezone.now()
         self.full_clean()
         self.save()
+
+        from apps.notifications.services import notify_session_distributed
+
+        notify_session_distributed(self)
 
     def lock(self, user):
         if self.status != self.Status.DISTRIBUTED:
@@ -330,6 +354,10 @@ class Session(models.Model):
         self.locked_by = None
         self.full_clean()
         self.save()
+
+        from apps.notifications.services import notify_session_unlocked
+
+        notify_session_unlocked(self)
 
 
 class StaffAttendance(models.Model):
@@ -942,3 +970,7 @@ class StudentArrears(models.Model):
 
         self.full_clean()
         self.save()
+
+        from apps.notifications.services import notify_arrears_payment_recorded
+
+        notify_arrears_payment_recorded(arrears=self, amount=amount, recorded_by=recorded_by)
